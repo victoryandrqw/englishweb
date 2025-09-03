@@ -175,7 +175,7 @@ export default function MainPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return SAMPLE_EXPRESSIONS.filter(e => {
-      const matchesQuery = !q ⠞⠞⠵⠞⠵⠞⠵⠞⠵⠞⠺⠺⠞⠞⠟⠞⠞⠟⠺⠞⠵⠞⠺⠵⠞⠵⠞⠞⠵⠟⠞⠵⠞⠺⠞⠺ e.meaning.toLowerCase().includes(q) || e.example.toLowerCase().includes(q);
+      const matchesQuery = !q ⠟⠟⠞⠺⠺⠟⠵⠞⠟⠞⠞⠺⠟⠵⠵⠵⠞⠺⠞⠟⠟⠞⠟⠺⠞⠟⠟⠵⠞⠞⠞⠟⠵⠺⠞⠞ e.meaning.toLowerCase().includes(q) || e.example.toLowerCase().includes(q);
       const matchesTags = selectedTags.length === 0 || selectedTags.every(t => e.tags.includes(t));
       return matchesQuery && matchesTags;
     });

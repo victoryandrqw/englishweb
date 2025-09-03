@@ -1,46 +1,227 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Англо-русский словарь</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 text-gray-900">
-  <header class="bg-blue-600 text-white p-6 shadow-md">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-3xl font-bold">Английский словарь</h1>
-      <p class="mt-2 text-blue-100">Учите новые слова, переводите и расширяйте словарный запас</p>
-    </div>
-  </header>
+import React, { useState, useMemo } from "react";
 
-  <main class="max-w-4xl mx-auto p-6">
-    <!-- Поиск -->
-    <div class="mb-8">
-      <label for="search" class="block text-lg font-medium mb-2">Найти слово:</label>
-      <div class="flex gap-2">
-        <input type="text" id="search" placeholder="Введите английское слово..."
-               class="flex-1 p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <button class="px-5 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700">Поиск</button>
+// Главная страница одностраничного публичного словаря выражений
+// Технологии: React + Tailwind CSS (классы Tailwind уже использованы)
+// Файл экспортирует компонент по умолчанию.
+
+const SAMPLE_EXPRESSIONS = [
+  {
+    id: 1,
+    phrase: "Break the ice",
+    meaning: "To start a conversation in a social situation, to reduce tension.",
+    example: "I told a joke to break the ice at the meeting.",
+    tags: ["social", "idiom"]
+  },
+  {
+    id: 2,
+    phrase: "Hit the books",
+    meaning: "To study hard.",
+    example: "I need to hit the books tonight — the exam is tomorrow.",
+    tags: ["study", "phrasal"]
+  },
+  {
+    id: 3,
+    phrase: "Cut to the chase",
+    meaning: "Leave out unnecessary details and get to the point.",
+    example: "We don't have much time, so cut to the chase.",
+    tags: ["business", "idiom"]
+  },
+  {
+    id: 4,
+    phrase: "Piece of cake",
+    meaning: "Something very easy to do.",
+    example: "That interview was a piece of cake.",
+    tags: ["casual", "idiom"]
+  },
+  {
+    id: 5,
+    phrase: "On the same page",
+    meaning: "Agreeing or understanding each other.",
+    example: "Let's make sure we're on the same page before we proceed.",
+    tags: ["business", "phrases"]
+  }
+];
+
+function Header({ repoUrl }) {
+  return (
+    <header className="bg-gradient-to-r from-indigo-600 to-sky-500 text-white">
+      <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold">English Expressions</h1>
+          <p className="text-sm opacity-90">Публичный словарь популярных английских выражений</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <a
+            href={repoUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-md text-sm"
+          >
+            Contribute on GitHub
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function SearchBar({ value, onChange }) {
+  return (
+    <div className="flex items-center gap-3 w-full max-w-2xl">
+      <label htmlFor="search" className="sr-only">Search</label>
+      <input
+        id="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Поиск выражений или примеров..."
+        className="flex-1 bg-white border border-gray-200 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      />
+      <button
+        onClick={() => onChange("")}
+        className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm"
+      >
+        Сброс
+      </button>
+    </div>
+  );
+}
+
+function TagFilter({ tags, selectedTags, toggleTag }) {
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {tags.map((t) => {
+        const active = selectedTags.includes(t);
+        return (
+          <button
+            key={t}
+            onClick={() => toggleTag(t)}
+            className={px-3 py-1 rounded-full text-sm border ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-200'}}
+          >
+            {t}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExpressionCard({ item, onOpen }) {
+  return (
+    <article className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold">{item.phrase}</h3>
+          <p className="text-sm text-gray-600 mt-1">{item.meaning}</p>
+        </div>
+        <div className="flex-shrink-0 text-right">
+          <div className="text-xs text-gray-500">Теги</div>
+          <div className="text-sm">{item.tags.join(', ')}</div>
+          </div>
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-sm text-gray-700 italic">"{item.example}"</p>
+        <button onClick={() => onOpen(item)} className="ml-4 text-sm text-indigo-600 hover:underline">Подробнее</button>
+      </div>
+    </article>
+  );
+}
+
+function Modal({ item, onClose }) {
+  if (!item) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full z-10 p-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{item.phrase}</h2>
+            <p className="text-gray-600 mt-2">{item.meaning}</p>
+          </div>
+          <button onClick={onClose} className="text-sm text-gray-500">Close</button>
+        </div>
+        <hr className="my-4" />
+        <div>
+          <h3 className="font-semibold">Пример</h3>
+          <p className="italic mt-1">"{item.example}"</p>
+        </div>
+        <div className="mt-4">
+          <h3 className="font-semibold">Теги</h3>
+          <div className="mt-2 flex gap-2 flex-wrap">{item.tags.map(t => <span key={t} className="px-2 py-1 text-sm border rounded-full">{t}</span>)}</div>
+        </div>
       </div>
     </div>
+  );
+}
 
-    <!-- Популярные слова -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Популярные слова</h2>
-      <ul class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">Hello — Привет</li>
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">World — Мир</li>
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">Love — Любовь</li>
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">Friend — Друг</li>
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">Family — Семья</li>
-        <li class="bg-white shadow rounded-2xl p-4 hover:shadow-md">Dream — Мечта</li>
-      </ul>
-    </section>
-  </main>
+export default function MainPage() {
+  const [query, setQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [active, setActive] = useState(null);
 
-  <footer class="bg-gray-100 text-center text-sm text-gray-600 p-4 mt-10">
-    © 2025 Английский словарь. Все права защищены.
-  </footer>
-</body>
-</html>
+  const repoUrl = "https://github.com/your-username/english-expressions"; // <-- поменяйте на ваш репозиторий
+
+  // Собираем все теги из примеров
+  const allTags = useMemo(() => {
+    const s = new Set();
+    SAMPLE_EXPRESSIONS.forEach(e => e.tags.forEach(t => s.add(t)));
+    return Array.from(s).sort();
+  }, []);
+
+  const toggleTag = (t) => {
+    setSelectedTags(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  };
+
+  // Фильтрация по запросу и тегам
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return SAMPLE_EXPRESSIONS.filter(e => {
+      const matchesQuery = !q ⠞⠞⠵⠞⠵⠞⠵⠞⠵⠞⠺⠺⠞⠞⠟⠞⠞⠟⠺⠞⠵⠞⠺⠵⠞⠵⠞⠞⠵⠟⠞⠵⠞⠺⠞⠺ e.meaning.toLowerCase().includes(q) || e.example.toLowerCase().includes(q);
+      const matchesTags = selectedTags.length === 0 || selectedTags.every(t => e.tags.includes(t));
+      return matchesQuery && matchesTags;
+    });
+  }, [query, selectedTags]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <Header repoUrl={repoUrl} />
+
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        <section className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold">Найди выражение</h2>
+              <p className="text-gray-600 mt-1">Поиск по фразам, значению, примерам и тегам.</p>
+            </div>
+            <SearchBar value={query} onChange={setQuery} />
+          </div>
+
+          <div className="mt-4">
+            <TagFilter tags={allTags} selectedTags={selectedTags} toggleTag={toggleTag} />
+          </div>
+        </section>
+
+        <section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(item => (
+              <ExpressionCard key={item.id} item={item} onOpen={setActive} />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="mt-8 text-center text-gray-600">Ничего не найдено. Попробуйте изменить запрос или теги.</div>
+          )}
+        </section>
+
+        <footer className="mt-12 flex items-center justify-between">
+          <div className="text-sm text-gray-600">© {new Date().getFullYear()} English Expressions — открытый проект.</div>
+          <div className="flex items-center gap-3">
+            <a href={repoUrl} target="_blank" rel="noreferrer" className="text-sm underline">GitHub</a>
+            <a href="#contribute" className="text-sm">Как внести вклад</a>
+          </div>
+        </footer>
+      </main>
+
+      <Modal item={active} onClose={() => setActive(null)} />
+    </div>
+  );
+}
